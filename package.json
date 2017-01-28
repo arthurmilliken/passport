@@ -1,0 +1,28 @@
+{
+  "name": "passport",
+  "version": "0.0.1",
+  "description": "a simple passport server on koajs",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arthurmilliken/passport.git"
+  },
+  "keywords": [
+    "passport",
+    "koa",
+    "node"
+  ],
+  "author": "Arthur Milliken",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/arthurmilliken/passport/issues"
+  },
+  "homepage": "https://github.com/arthurmilliken/passport#readme",
+  "dependencies": {
+    "koa": "^1.2.4",
+    "koa-router": "^5.4.0"
+  }
+}
