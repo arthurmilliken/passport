@@ -23,6 +23,7 @@ module.exports = function (router) {
 	const tokens = function *() {
 
 		if (!privateKey) this.throw(500, 'CONFIGURATION ERROR: please check server log for details.');
+    if (!publicKey) this.throw(500, 'CONFIGURATION ERROR: please check server log for details.');
 
 		// Validate query.
 		let grantType = this.query.grant_type;
@@ -54,9 +55,7 @@ module.exports = function (router) {
 	};
 
 	router.get('/oauth2/tokens', tokens);
-	router.get('/oauth2/token', tokens);
 	router.post('/oauth2/tokens', tokens);
-	router.post('/oauth2/token', tokens);
 
 	router.get('/oauth2/tokens/:token/verify', function *() {
     let context = this;
