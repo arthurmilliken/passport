@@ -4,7 +4,8 @@
   "description": "a simple passport server on koajs",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "config": "./config.sh"
   },
   "repository": {
     "type": "git",
