@@ -4,7 +4,8 @@ const NodeRSA = require('node-rsa');
 let key = new NodeRSA({b: 512});
 
 console.log('\n----------------------------------------------------------');
-console.log(  'Please save these ENVIRONMENT VARIABLES to your environmnt:')
+console.log(  'Please save these ENVIRONMENT VARIABLES to your environmnt:');
+console.log(  '(In Heroku, go to Settings > Reveal Config Variables)');
 console.log(  '----------------------------------------------------------');
 
 let privateKey = key.exportKey('pkcs1-private-pem');

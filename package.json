@@ -24,7 +24,8 @@
   "dependencies": {
     "jsonwebtoken": "^7.2.1",
     "koa": "^1.2.4",
-    "koa-router": "^5.4.0"
+    "koa-router": "^5.4.0",
+    "uuid": "^3.0.1"
   },
   "devDependencies": {
     "node-rsa": "^0.4.2"
