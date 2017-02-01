@@ -1,14 +1,30 @@
+const moment = require('moment');
+
+const package = require('../package.json');
+
+const started = moment();
 
 module.exports = function (app) {
   const router = require('koa-router')();
 
-  require('./error.js')(router);
-  require('./hello.js')(router);
-  require('./oauth2/tokens.js')(router);
-  require('./oauth2/public-key')(router);
+  router.get('/', function *() {
+    this.body = {
+      name: package.name,
+      version: package.version,
+      description: package.description,
+      started: started.format(),
+      uptime: moment.duration(moment().diff(started)).humanize(),
+    };
+  });
+
+  require('./error.js')(router, app);
+  require('./hello.js')(router, app);
+  require('./oauth2/tokens.js')(router, app);
+  require('./oauth2/public-key.js')(router, app);
+  require('./api/applications.js')(router, app);
 
 	app
     .use(router.routes())
     .use(router.allowedMethods());
-}
+};
 

@@ -9,10 +9,17 @@ const applications = {
 		clientSecret: '41e3a409-8a78-4a60-982d-4c36382d67f0',
 		scopes: [ 'superuser' ],
 		ttl: 84600		
-	}
-}
+	},
+  'admin': {
+    clientId: 'admin',
+    clientSecret: '8dc733b0-4851-4402-b112-a33602fbc5f3',
+    scopes: [ 'superuser' ],
+    ttl: 84600    
+  }
+};
 
-module.exports = function (router) {
+module.exports = function (router, app) {
+
 
 	const privateKey = process.env.RSA_PRIVATE_KEY;
 	if (!privateKey) throw(new Error('ERROR: please run node scripts/generate-rsa-keys.js before proceeding.'));
@@ -21,36 +28,37 @@ module.exports = function (router) {
   if (!publicKey) throw(new Error('ERROR: please run node scripts/generate-rsa-keys.js before proceeding.'));
 
 	const tokens = function *() {
+    let Application = app.context.models.Application;
 
 		if (!privateKey) this.throw(500, 'CONFIGURATION ERROR: please check server log for details.');
     if (!publicKey) this.throw(500, 'CONFIGURATION ERROR: please check server log for details.');
 
 		// Validate query.
-		let grantType = this.query.grant_type;
+		let grantType = this.query['grant_type'];
 		if (!grantType) this.throw(400, 'grant_type required.');
 		if (grantType !== 'client_credentials') this.throw(400, 'grant_type must be client_credentials');
 
-		let clientId = this.query.client_id;
+		let clientId = this.query['client_id'];
 		if (!clientId) this.throw(400, 'client_id reqiured.');
 
-		let clientSecret = this.query.client_secret;
+		let clientSecret = this.query['client_secret'];
 		if (!clientSecret) this.throw(400, 'client_secret required.');
 
-		let application = applications[clientId];
+		let application = yield Application.findById(clientId);
+
 		if (!application) this.throw(404, format('client_id %s not found.', clientId));
 
-		if (application.clientSecret !== clientSecret) this.throw(401, 'client_secret is not valid');
+		if (application.secret !== clientSecret) this.throw(401, 'client_secret is not valid');
 
 		this.body = jwt.sign({
-			exp: utilities.numericDate(Date.now() + (application.ttl * 1000)),
-			iss: 'pick.media',
-			aud: clientId,
-			scopes: application.scopes
-		}, 
-		privateKey,
-		{
-			algorithm: 'RS256'
-		});
+  			exp: utilities.numericDate(Date.now() + (application.ttl * 1000)),
+  			iss: 'pick.media',
+  			aud: clientId,
+  			scopes: application.scopes
+  		}, 
+  		privateKey,
+  		{ algorithm: 'RS256' }
+    );
 
 	};
 
