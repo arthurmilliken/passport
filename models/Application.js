@@ -3,34 +3,16 @@ const moment = require('moment');
 
 module.exports = function (client) {
   return {
-    key: function (id) {
-      return 'application:' + id;
+    create: function () {
     },
     get: function (id) {
-      let self = this;
-      return Promise.coroutine(function *() {
-        let key = self.key(id);
-        let response = yield client.hget(key, 'json');
-        if (response) {
-          return JSON.parse(response);
-        }
-        else return null;
-      })();
     },
-    meta: function (id) {
-      let key = this.key(id);
-      return client.hgetall(key);
+    save: function (id, obj) {
     },
-    set: function (id, obj) {
-      let key = this.key(id);
-      return client.hmset(key, {
-        'json': JSON.stringify(obj),
-        'modified': moment().format(),
-      });
+    delete: function (id) {
     },
-    del: function (id) {
-      let key = this.key(id);
-      return client.del(key);
+    list: function () {
     },
+
   };
 };

@@ -7,6 +7,11 @@ This API provides authorization services
 
 # Group Token
 
+Endpoints for issuing tokens.
+
+## Tokens [/oauth2/tokens]
+
+
 
 # Group Application
 
