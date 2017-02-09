@@ -3,14 +3,14 @@ const NodeRSA = require('node-rsa');
 
 let key = new NodeRSA({b: 512});
 
-console.log('\n----------------------------------------------------------');
-console.log(  'Please save these ENVIRONMENT VARIABLES to your environmnt:');
-console.log(  '(In Heroku, go to Settings > Reveal Config Variables)');
-console.log(  '----------------------------------------------------------');
-
 let privateKey = key.exportKey('pkcs1-private-pem');
-console.log('\nRSA_PRIVATE_KEY:\n\n' + privateKey);
+console.log('\n' + privateKey);
 
 let publicKey = key.exportKey('pkcs1-public-pem');
-console.log('\nRSA_PUBLIC_KEY:\n\n' + publicKey);
+console.log('\n' + publicKey);
 
+// console.log('\n---------------------------------------------');
+// console.log(  'Please save these values to your environment:');
+// console.log(  '---------------------------------------------\n');
+// console.log('RSA_PRIVATE_KEY="%s"', privateKey.replace(/\n/g, '\\n'));
+// console.log('RSA_PUBLIC_KEY="%s"', publicKey.replace(/\n/g, '\\n'));

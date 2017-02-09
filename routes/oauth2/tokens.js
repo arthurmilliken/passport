@@ -20,12 +20,8 @@ const applications = {
 
 module.exports = function (router, app) {
 
-
-	const privateKey = process.env.RSA_PRIVATE_KEY;
-	if (!privateKey) throw(new Error('ERROR: please run node scripts/generate-rsa-keys.js before proceeding.'));
-
-  const publicKey = process.env.RSA_PUBLIC_KEY;
-  if (!publicKey) throw(new Error('ERROR: please run node scripts/generate-rsa-keys.js before proceeding.'));
+	const privateKey = app.context.RSA_PRIVATE_KEY;
+  const publicKey = app.context.RSA_PUBLIC_KEY;
 
 	const tokens = function *() {
     let Application = app.context.models.Application;

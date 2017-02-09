@@ -4,6 +4,7 @@
   "description": "a simple passport server on koajs",
   "main": "app.js",
   "scripts": {
+    "start": "node .",
     "test": "echo \"Error: no test specified\" && exit 1",
     "config": "./config.sh"
   },
@@ -30,6 +31,7 @@
     "koa": "^1.2.4",
     "koa-body": "^1.6.0",
     "koa-router": "^5.4.0",
+    "lodash": "^4.17.4",
     "md5": "^2.2.1",
     "moment": "^2.17.1",
     "redis": "^2.6.5",
