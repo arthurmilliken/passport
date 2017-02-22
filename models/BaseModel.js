@@ -24,6 +24,7 @@ BaseModel.prototype.validate = function (obj, schema) {
       message += (error.stack + '. ');
     });
     let err = new Error(message.trim());
+    err.status = 400;
     err.errors = errors;
     throw err;
   }
