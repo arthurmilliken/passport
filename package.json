@@ -26,7 +26,9 @@
   "dependencies": {
     "bcrypt": "^1.0.2",
     "bluebird": "^3.4.7",
+    "clone": "^2.1.0",
     "co-redis": "^2.1.1",
+    "jsonschema": "^1.1.1",
     "jsonwebtoken": "^7.2.1",
     "koa": "^1.2.4",
     "koa-body": "^1.6.0",

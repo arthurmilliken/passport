@@ -1,0 +1,18 @@
+{
+    "title": "Application",
+    "description": "A client application",
+    "type": "object",
+    "properties": {
+      "id": { "type": "string" },
+      "secret": { "type": "string" },
+      "name": { "type": "string" },
+      "tokenTTL": { "type": "number" },
+      "scopes": { 
+        "type": "array",
+        "items": { "type": "string" }
+      }
+    },
+    "required": ["name"],
+
+    "$schema": "http://json-schema.org/draft-04/schema#"
+}

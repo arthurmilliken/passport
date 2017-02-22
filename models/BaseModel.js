@@ -1,11 +1,33 @@
+const _ = require('lodash');
 const Promise = require('bluebird');
 const moment = require('moment');
 const uuid = require('uuid/v4');
+const validate = require('jsonschema').validate;
 
-let BaseModel = module.exports = function (client, modelName) {
-  if (!client) throw new Error('first argument must be redis client.');
-  this.modelName = modelName || '_';
-  this.client = client;
+let BaseModel = module.exports = function (opts) {
+  if (!opts.client || _.isEmpty(opts.client)) throw new Error('client is required.');
+  if (!opts.name || _.isEmpty(opts.name)) throw new Error('name is required.');
+
+  this.name = opts.name;
+  this.client = opts.client;
+  this.createSchema = opts.createSchema;
+  this.saveSchema = opts.saveSchema;
+};
+
+BaseModel.prototype.validate = function (obj, schema) {
+  let validation = validate(obj, schema);
+  if (validation.errors.length > 0) {
+    let errors = [];
+    let message = '';
+    _.each(validation.errors, error => {
+      errors.push(error.stack);
+      message += (error.stack + '. ');
+    });
+    let err = new Error(message.trim());
+    err.errors = errors;
+    throw err;
+  }
+  return true;
 };
 
 /**
@@ -14,7 +36,7 @@ let BaseModel = module.exports = function (client, modelName) {
  * @return {String}
  */
 BaseModel.prototype.key = function (id) {
-  return this.modelName + ':' + id;
+  return this.name + ':' + id;
 };
 
 /**
@@ -23,7 +45,7 @@ BaseModel.prototype.key = function (id) {
  * @return {String}
  */
 BaseModel.prototype.pkIndex = function () {
-  if (!this._pkIndex) this._pkIndex = 'index:' + this.modelName;
+  if (!this._pkIndex) this._pkIndex = 'index:' + this.name;
   return this._pkIndex;
 };
 
@@ -66,7 +88,7 @@ BaseModel.prototype.get = function (id) {
 BaseModel.prototype.create = function (obj) {
   let self = this;
   return Promise.coroutine(function *() {
-    yield self.validateCreate(obj);
+    self.validateCreate(obj);
     if (!obj.id) obj.id = yield self.id(obj);
     let key = self.key(obj.id);
     let created = moment().format();
@@ -75,24 +97,20 @@ BaseModel.prototype.create = function (obj) {
       created,
       'modified': created,
     });
-    yield self.client.zadd('index:' + self.modelName, 0, obj.id);
+    yield self.client.zadd('index:' + self.name, 0, obj.id);
     return obj;
   })();
 };
 
 /**
- * Override this method in your model.
+ * Override this method if needed.
  * @param  {Object} obj [description]
- * @param  {Boolean} multiple if false, reject on first error. Otherwise,
- *                            continue validating and reject at end.
  * @return {Promise} 
  */
-BaseModel.prototype.validateCreate = function (obj, multiple) {
+BaseModel.prototype.validateCreate = function (obj) {
   let self = this;
   return Promise.coroutine(function *() {
-    let err = new Error(self.modelName + ': validateCreate() Not Implemented.');
-    err.errors = [ err.message ];
-    throw(err);
+    self.validate(obj, self.createSchema);
   })();
 };
 
@@ -117,18 +135,14 @@ BaseModel.prototype.save = function (id, obj) {
 };
 
 /**
- * Override this method in your model.
+ * Override this method if needed.
  * @param  {Object} obj [description]
- * @param  {Boolean} multiple if false, reject on first error. Otherwise,
- *                            continue validating and reject at end.
  * @return {Promise} 
  */
-BaseModel.prototype.validateSave = function (obj, multiple) {
+BaseModel.prototype.validateSave = function (obj) {
   let self = this;
   return Promise.coroutine(function *() {
-    let err = new Error(self.modelName + ': validateSave() Not Implemented.');
-    err.errors = [ err.message ];
-    throw(err);
+    self.validate(obj, self.saveSchema);
   })();
 };
 
@@ -172,7 +186,7 @@ BaseModel.prototype.exists = function (id) {
  * List objects by ID
  * @return {Promise} [String]
  */
-BaseModel.prototype.list = function () {
+BaseModel.prototype.ids = function () {
   let self = this;
   return Promise.coroutine(function *() {
     let result = yield self.client.zscan(self.pkIndex(), 0);

@@ -1,63 +1,56 @@
 const _ = require('lodash');
 const Promise = require('bluebird');
+const clone = require('clone');
 const format = require('util').format;
 const md5 = require('md5');
 const uuid = require('uuid/v4');
+const validate = require('jsonschema').validate;
 
 const BaseModel = require('./BaseModel');
+const createSchema = require('./Application.schema.json');
+const saveSchema = clone(createSchema);
+saveSchema.required = ['id', 'secret', 'name', 'tokenTTL', 'scopes'];
 
 module.exports = function (client) {
   let model = new BaseModel(client, 'application');
+  
+  let model = new BaseModel({
+    name: 'application',
+    client,
+    createSchema,
+    saveSchema,
+  });
 
   model.id = function (obj) {
+    return md5(obj.name);
+  };
+
+  model.validateCreate = function (obj) {
+    let self = this;
     return Promise.coroutine(function *() {
-      return md5(obj.name);
+      self.validate(obj, self.createSchema);
+      if (!obj.tokenTTL) obj.tokenTTL = 600;
+      if (!obj.secret) obj.secret = uuid();
+      if (!obj.scopes) obj.scopes = [];
+      if (!obj.id) obj.id = yield self.id(obj);
+      let exists = yield self.exists(obj.id);
+      if (exists) {
+        let err = new Error(`application with name ${obj.name} already exists.`);
+        err.status = 400;
+        throw err;
+      }
     })();
   };
 
-  model.validateCreate = function (obj, multiple) {
-    console.log('model.validateCreate:', obj);
+  model.validateSave = function (obj) {
     let self = this;
-
     return Promise.coroutine(function *() {
-      let errors = [];
-      
-      let logError = function (message) {
-        message = format.apply(self, arguments);
-        errors.push(message);
-        if (!multiple) {
-          let err = new Error(message);
-          err.errors = [ message ];
-          throw err;
-        } 
-      };
-
-      console.log('obj.name:', obj.name);
-
-      if (!obj.name) logError('name is required.');
-      if (!obj.tokenTTL) obj.tokenTTL = 600;
-      if (!_.isInteger(obj.tokenTTL)) logError('tokenTTL must be an integer.');
-      if (!obj.secret) obj.secret = uuid();
-      if (!obj.scopes) obj.scopes = [];
-      if (!_.isArray(obj.scopes)) logError('scopes must be an array.');
-      let typeError = false;
-      for (let i = 0; i < obj.scopes.length; i++) {
-        if (!_.isString(obj.scopes[i])) typeError = true;
-      }
-      if (typeError) logError('every element of scopes must be a string.');
-
-      if (!obj.id) obj.id = yield self.id(obj);
-      let exists = yield self.exists(obj.id);
-      if (exists) logError('%s with id "%s" already exists.', self.modelName, obj.id);
-
-      if (errors.length > 0) {
-        let err = new Error(errors[0]);
-        err.errors = errors;
+      self.validate(obj, self.saveSchema);
+      if (self.id(obj) !== obj.id) {
+        let err = new Error('name cannot be changed.');
+        err.status = 400;
         throw err;
       }
-      console.log('Application.validateCreate: DONE!');
-      return;
-
     })();
   };
 

@@ -8,7 +8,7 @@ module.exports = function (router, app) {
   }
 
   router.get('/api/applications', function *() {
-    this.body = yield Application.list();
+    this.body = yield Application.ids();
   });
 
   router.get('/api/applications/:id', function *() {
@@ -20,16 +20,12 @@ module.exports = function (router, app) {
     if (this.get('content-type') !== 'application/json')
       this.throw(400, 'Content-Type must be application/json');
     let obj = this.request.body;
-    // if (!obj.id) this.throw(400, 'obj.id is required');
-    // if (!obj.scopes) obj.scopes = [];
-    // if (!obj.secret) obj.secret = uuid();
-    // if (!obj.ttl) obj.ttl = 600; // ten minutes.
     try {
       let result = yield Application.create(obj);
       this.body = result;   
     }
     catch (err) {
-      this.throw(400, err);
+      this.throw(err.status || 500, err);
     }
   });
 
@@ -40,7 +36,7 @@ module.exports = function (router, app) {
       this.body = result;
     }
     catch (err) {
-      this.throw(400, err);
+      this.throw(err.status || 500, err);
     }
   });
 
@@ -59,31 +55,19 @@ module.exports = function (router, app) {
 
     let result = [];
 
-    try {
-      let obj = {
-        name: 'admin',
-        scopes: [ 'superuser' ],
-        ttl: 84600
-      };     
-      let created = yield Application.create(obj);
-      result.push(created);
-    }
-    catch (err) {
-      result.push({ error: err.errors });
-    }
+    let created = yield Application.create({
+      name: 'admin',
+      scopes: [ 'superuser' ],
+      ttl: 84600
+    });
+    result.push(created);
 
-    try {
-      let obj = {
-        name: 'api.zppr.com',
-        scopes: [ 'superuser' ],
-        ttl: 84600
-      };     
-      let created = yield Application.create(obj);
-      result.push(created);
-    }
-    catch (err) {
-      result.push({ error: err.errors });
-    }
+    created = yield Application.create({
+      name: 'api.zppr.com',
+      scopes: [ 'superuser' ],
+      ttl: 84600
+    });
+    result.push(created);
 
     this.body = result;
   }); 
