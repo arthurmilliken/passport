@@ -1,10 +1,7 @@
-const _ = require('lodash');
 const Promise = require('bluebird');
 const clone = require('clone');
-const format = require('util').format;
 const md5 = require('md5');
 const uuid = require('uuid/v4');
-const validate = require('jsonschema').validate;
 
 const BaseModel = require('./BaseModel');
 const createSchema = require('./Application.schema.json');
@@ -12,7 +9,6 @@ const saveSchema = clone(createSchema);
 saveSchema.required = ['id', 'secret', 'name', 'tokenTTL', 'scopes'];
 
 module.exports = function (client) {
-  let model = new BaseModel(client, 'application');
   
   let model = new BaseModel({
     name: 'application',
@@ -35,7 +31,7 @@ module.exports = function (client) {
       if (!obj.id) obj.id = yield self.id(obj);
       let exists = yield self.exists(obj.id);
       if (exists) {
-        let err = new Error(`application with name ${obj.name} already exists.`);
+        let err = new Error(`{self.modelName} with name ${obj.name} already exists.`);
         err.status = 400;
         throw err;
       }

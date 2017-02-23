@@ -1,0 +1,13 @@
+{
+    "title": "User",
+    "description": "A client user",
+    "type": "object",
+    "properties": {
+      "id": { "type": "string" },
+      "email": { "type": "string", "format": "email" },
+      "name": { "type": "string" }
+    },
+    "required": ["email", "name"],
+
+    "$schema": "http://json-schema.org/draft-04/schema#"
+}

@@ -89,18 +89,23 @@ BaseModel.prototype.get = function (id) {
 BaseModel.prototype.create = function (obj) {
   let self = this;
   return Promise.coroutine(function *() {
-    self.validateCreate(obj);
-    if (!obj.id) obj.id = yield self.id(obj);
-    let key = self.key(obj.id);
-    let created = moment().format();
-    let response = yield self.client.hmset(key, {
-      'json': JSON.stringify(obj),
-      created,
-      'modified': created,
-    });
-    yield self.client.zadd('index:' + self.name, 0, obj.id);
-    return obj;
-  })();
+    try {
+      yield self.validateCreate(obj);
+      if (!obj.id) obj.id = yield self.id(obj);
+      let key = self.key(obj.id);
+      let created = moment().format();
+      let response = yield self.client.hmset(key, {
+        'json': JSON.stringify(obj),
+        created,
+        'modified': created,
+      });
+      yield self.client.zadd('index:' + self.name, 0, obj.id);
+      return obj;
+    }
+    catch (err) {
+      throw err;
+    }
+    })();
 };
 
 /**
@@ -158,7 +163,7 @@ BaseModel.prototype.delete = function (id) {
     let key = self.key(id);
     let deleted = yield self.client.del(key);
     if (deleted) {
-      yield self.client.zrem(self.pkIndex(), id);
+      return yield self.client.zrem(self.pkIndex(), id);
     }
   })();
 };

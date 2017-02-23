@@ -17,8 +17,10 @@ module.exports = function (app) {
     };
   });
 
-  require('./error.js')(router, app);
-  require('./hello.js')(router, app);
+  router.all('/error', function *() {
+    this.throw(500, 'Error!');
+  });
+
   require('./oauth2/tokens.js')(router, app);
   require('./oauth2/public-key.js')(router, app);
   require('./api/applications.js')(router, app);

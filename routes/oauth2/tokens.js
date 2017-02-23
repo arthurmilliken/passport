@@ -3,21 +3,6 @@ const jwt = require('jsonwebtoken');
 
 const utilities = require('../../lib/utilities.js');
 
-const applications = {
-	'zppr': {
-		clientId: 'zppr',
-		clientSecret: '41e3a409-8a78-4a60-982d-4c36382d67f0',
-		scopes: [ 'superuser' ],
-		ttl: 84600		
-	},
-  'admin': {
-    clientId: 'admin',
-    clientSecret: '8dc733b0-4851-4402-b112-a33602fbc5f3',
-    scopes: [ 'superuser' ],
-    ttl: 84600    
-  }
-};
-
 module.exports = function (router, app) {
 
 	const privateKey = app.context.RSA_PRIVATE_KEY;
@@ -40,7 +25,7 @@ module.exports = function (router, app) {
 		let clientSecret = this.query['client_secret'];
 		if (!clientSecret) this.throw(400, 'client_secret required.');
 
-		let application = yield Application.findById(clientId);
+		let application = yield Application.get(clientId);
 
 		if (!application) this.throw(404, format('client_id %s not found.', clientId));
 
@@ -55,7 +40,6 @@ module.exports = function (router, app) {
   		privateKey,
   		{ algorithm: 'RS256' }
     );
-
 	};
 
 	router.get('/oauth2/tokens', tokens);
@@ -75,6 +59,7 @@ module.exports = function (router, app) {
     catch (err) {
     	if (err.name === 'JsonWebTokenError')
     		context.throw(401, err.message);
+      else throw err;
     }
 
 	});
