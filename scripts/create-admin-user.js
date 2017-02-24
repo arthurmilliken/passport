@@ -1,31 +1,35 @@
 const Promise = require('bluebird');
-const mongoose = require('mongoose');
-const uuid = require('uuid/v4');
-
-mongoose.Promise = Promise;
+const redis = require('redis');
+const coredis = require('co-redis');
+const md5 = require('md5');
 
 require('dotenv').config( {path: __dirname + '/../.env'} );
 
-
 Promise.coroutine(function *() {
+  const dbClient = coredis(redis.createClient(process.env.REDIS_URL));
+  dbClient.on('error', console.error);  
 
-  mongoose.connect(process.env['MONGODB_URI']);
-
-  let Application = require('../models/Application.js')(mongoose);
+  let Application = require('../models/Application.js')(dbClient);
   
-  let inserted = yield Application.findOneAndUpdate(
-    { name: 'admin' },
-    {
+  try {
+    let inserted = yield Application.create({
       name: 'admin',
-      secret: uuid(),
       scopes: [ 'superuser' ],
       ttl: 84600
-    },
-    { upsert: true, new: true }
-  );
+    });
+    console.log('\ncreated:', inserted);   
+  }
+  catch (err) {
+    console.error(err);
+  }
 
-  console.log('\nsaved:', inserted);
+  try {
+    let admin = yield Application.get(md5('admin'));
+    console.log('\nfound:', admin);
+  }
+  catch (err) {
+    console.error(err);
+  }
 
-  yield mongoose.disconnect();
-
+  dbClient.quit();
 })();

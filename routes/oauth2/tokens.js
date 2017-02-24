@@ -42,7 +42,6 @@ module.exports = function (router, app) {
     );
 	};
 
-	router.get('/oauth2/tokens', tokens);
 	router.post('/oauth2/tokens', tokens);
 
 	router.get('/oauth2/tokens/:token/verify', function *() {

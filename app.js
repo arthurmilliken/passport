@@ -22,8 +22,9 @@ app.context.RSA_PUBLIC_KEY = fs.readFileSync(process.env.RSA_PUBLIC_KEY_PATH);
 app.context.RSA_PRIVATE_KEY = fs.readFileSync(process.env.RSA_PRIVATE_KEY_PATH);
 
 // Mount middleware.
-app.use(koaBody);
 app.use(require('./middleware/logger.js')());
+app.use(require('./middleware/errorHandler.js')({ app }));
+app.use(koaBody);
 require('./routes')(app);
 
 // Start server.

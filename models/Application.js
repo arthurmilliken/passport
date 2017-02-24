@@ -18,7 +18,9 @@ module.exports = function (client) {
   });
 
   model.id = function (obj) {
-    return md5(obj.name);
+    return Promise.coroutine(function *() {
+      return md5(obj.name);
+    })();
   };
 
   model.validateCreate = function (obj) {
@@ -31,7 +33,7 @@ module.exports = function (client) {
       if (!obj.id) obj.id = yield self.id(obj);
       let exists = yield self.exists(obj.id);
       if (exists) {
-        let err = new Error(`{self.modelName} with name ${obj.name} already exists.`);
+        let err = new Error(`{self.name} with name ${obj.name} already exists.`);
         err.status = 400;
         throw err;
       }

@@ -21,12 +21,11 @@ BaseModel.prototype.validate = function (obj, schema) {
     let message = '';
     _.each(validation.errors, error => {
       errors.push(error.stack);
-      message += (error.stack + '. ');
+      message = error.stack;
     });
     let err = new Error(message.trim());
     err.status = 400;
-    err.errors = errors;
-    throw err;
+    err.errors = errors;    throw err;
   }
   return true;
 };

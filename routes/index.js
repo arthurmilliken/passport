@@ -24,6 +24,7 @@ module.exports = function (app) {
   require('./oauth2/tokens.js')(router, app);
   require('./oauth2/public-key.js')(router, app);
   require('./api/applications.js')(router, app);
+  require('./api/users.js')(router, app);
 
 	app
     .use(router.routes())
